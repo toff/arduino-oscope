@@ -53,7 +53,9 @@ public:
 		GError *error = NULL;
 		gsize written;
 		g_io_channel_write_chars(channel,(const gchar*)&v,sizeof(v),&written,&error);
+#ifdef DEBUG_SERIAL
 		fprintf(stderr,"> %u\n",v);
+#endif
 	}
 
 	static void write(const unsigned char *buf, unsigned int size) {
@@ -184,14 +186,18 @@ END_FUNCTION
 
 DECLARE_FUNCTION(COMMAND_BUFFER_SEG)(const SerPro::RawBuffer &b)
 {
+#ifdef DEBUG_SERIAL
 	fprintf(stderr,"Got analog data, %d samples\n",b.size);
+#endif
 	sdata(b.buffer+1, b.size-1);
 	if ( oneshot_cb && ! delay_request) {
 		in_request=FALSE;
 		oneshot_cb(oneshot_cb_data);
 	} else{
 		if (!freeze) {
+#ifdef DEBUG_SERIAL
 			printf("Requesting more samples\n");
+#endif
 			SerPro::sendPacket(COMMAND_START_SAMPLING);
 			in_request=TRUE;
 		}
@@ -221,12 +227,14 @@ template<>
 void Dumper<1>(const unsigned char *buffer,size_t size)
 {
 	size_t i;
+#ifdef DEBUG_SERIAL
 	fprintf(stderr,"< [%03d] ",size);
 	fprintf(stderr,"{%03d}", (unsigned int)buffer[0]);
 	for (i=1;i<size;i++) {
 		fprintf(stderr," %u",(unsigned int)buffer[i]);
 	}
 	fprintf(stderr,"\n");
+#endif
 }
 
 
