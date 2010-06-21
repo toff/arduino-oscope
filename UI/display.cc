@@ -28,7 +28,7 @@
 #include "../protocol.h"
 #include "channel.h"
 #include "knob.h"
-
+#include "wavrecorder.h"
 
 GtkWidget *window;
 GdkPixbuf *pixbuf;
@@ -48,6 +48,7 @@ GtkWidget *freeze_button;
 GtkStyle *style;
 GtkWidget *sequential_check;
 GtkWidget *timebase_knob;
+GtkWidget *rec_button;
 
 #ifdef HAVE_DFT
 GtkWidget *isdft;
@@ -70,6 +71,8 @@ double pwm1_exponent_base;
 const unsigned int pwm1_ticks = 1024;
 const unsigned int pwm1_min_resolution = 100;
 pwm1_config_t pwm1config;
+
+WAVRecorder wavrecorder;
 
 static void flushEvents()
 {
@@ -214,6 +217,10 @@ void mysetdata(unsigned char *data,size_t size)
 		this_channel = (data[0]>>2) & 0x03;
 	}
 	scope_display_set_data(image,channels,this_channel,flags,data+2,size-2);
+
+	if (channels == 1 && wavrecorder.isRecording()) {
+		wavrecorder.write(data + 2, size - 2);
+	}
 }
 
 void mydigsetdata(unsigned char *data,size_t size)
@@ -495,6 +502,12 @@ gboolean trigger_single_shot(GtkWidget *widget)
 	set_frozen(TRUE);
 	serial_set_oneshot( done_trigger, dialog );
 
+	return TRUE;
+}
+
+gboolean trigger_record(GtkWidget *widget)
+{
+	wavrecorder.toggle();
 	return TRUE;
 }
 
@@ -793,6 +806,10 @@ int main(int argc,char **argv)
 
 	hbox = gtk_hbox_new(FALSE,4);
 	gtk_box_pack_start(GTK_BOX(vbox),hbox,TRUE,TRUE,0);
+
+	rec_button = gtk_toggle_button_new_with_label("Record");
+	g_signal_connect(G_OBJECT(rec_button), "toggled", G_CALLBACK(&trigger_record), NULL);
+	gtk_box_pack_start(GTK_BOX(hbox), rec_button, TRUE, TRUE, 0);
 
 	shot_button = gtk_button_new_with_label("Single shot");
 	g_signal_connect(G_OBJECT(shot_button),"clicked",G_CALLBACK(&trigger_single_shot),NULL);
