@@ -1,6 +1,6 @@
 all: oscope
 
-CXX=g++-4.3
+CXX=g++
 
 CXXFLAGS=-O2 -Wall -g @gtk_CFLAGS@ @cairo_CFLAGS@ @fftw3_CFLAGS@ @cairo_png_CFLAGS@
 LDFLAGS=-g
