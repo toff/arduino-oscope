@@ -311,7 +311,7 @@ static void draw(GtkWidget *scope, cairo_t *cr)
 		sprintf(text,"fMax: %.02fHz", self->freq/2);
 	}
 
-	fprintf(stderr,"%s\n",text);
+	//fprintf(stderr,"%s\n",text);
 	cairo_text_extents(cr, text, &te);
 
 	vtextpos -= (te.height + 4);
@@ -523,8 +523,10 @@ static gboolean scope_motion_event(GtkWidget *scope, GdkEventMotion      *event)
 	x = (int)event->x - scope->allocation.x;
 	y = (int)event->y - scope->allocation.y;
 
-	double correction = self->freq / self->numSamples;
-	printf("Freq: %f Hz (%f)\n", correction*x/2, self->freq/2);
+	if (self->mode == MODE_DFT) {
+		double correction = self->freq / self->numSamples;
+		fprintf(stderr, "Freq: %f Hz (%f)\n", correction*x/2, self->freq/2);
+	}
 	return TRUE;
 
 }
