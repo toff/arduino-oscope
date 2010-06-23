@@ -39,20 +39,7 @@ class WAVRecorder {
 public:
 	WAVRecorder() {
 		file = NULL;
-
-	    strncpy(wav_header.ChunkID, "RIFF", 4);
-	    wav_header.ChunkSize = 0; // size of the file from here, written when closing file
-	    strncpy(wav_header.Format, "WAVE", 4);
-	    strncpy(wav_header.Subchunk1ID, "fmt ", 4);
-		wav_header.Subchunk1Size = 16;
-		wav_header.AudioFormat = 1; // PCM
-		wav_header.NumChannels = 1;
-		wav_header.SampleRate = 44100;	// TODO : try to match sampling rate
-	    wav_header.BitsPerSample = 8;
-		wav_header.BlockAlign = (wav_header.NumChannels * wav_header.BitsPerSample) / 8;
-	    wav_header.ByteRate = wav_header.BlockAlign * wav_header.SampleRate;
-		strncpy(wav_header.Subchunk2ID, "data", 4);
-	    wav_header.Subchunk2Size = 0; // size of the data, written when closing file
+		sample_rate = 44100;
 	}
 
 	~WAVRecorder() {
@@ -62,6 +49,20 @@ public:
 	}
 
 	void start() {
+	    strncpy(wav_header.ChunkID, "RIFF", 4);
+	    wav_header.ChunkSize = 0; // size of the file from here, written when closing file
+	    strncpy(wav_header.Format, "WAVE", 4);
+	    strncpy(wav_header.Subchunk1ID, "fmt ", 4);
+		wav_header.Subchunk1Size = 16;
+		wav_header.AudioFormat = 1; // PCM
+		wav_header.NumChannels = 1;
+		wav_header.SampleRate = sample_rate;
+	    wav_header.BitsPerSample = 8;
+		wav_header.BlockAlign = (wav_header.NumChannels * wav_header.BitsPerSample) / 8;
+	    wav_header.ByteRate = wav_header.BlockAlign * wav_header.SampleRate;
+		strncpy(wav_header.Subchunk2ID, "data", 4);
+	    wav_header.Subchunk2Size = 0; // size of the data, written when closing file
+
 		file = fopen("record.wav", "w");
         fwrite(&wav_header, sizeof(wav_header), 1, file);
 	}
@@ -87,16 +88,21 @@ public:
 
 	void toggle() {
 		if (isRecording()) {
-			printf("Stopping WAV recorder\n");
+			fprintf(stderr, "Stopping WAV recorder\n");
 			stop();
 		} else {
-			printf("Starting WAV recorder\n");
+			fprintf(stderr, "Starting WAV recorder\n");
 			start();
 		}
 	}
 
+	void setSampleRate(int sample_rate) {
+		this->sample_rate = sample_rate;
+	}
+
 	
 private:
+	int sample_rate;
 	FILE* file;
 	wav_header_t wav_header;
 

@@ -386,6 +386,9 @@ static gboolean prescaler_changed(GtkWidget *widget)
 
 	double fsample = get_sample_frequency(arduino_freq, pow(2,base));
 	scope_display_set_sample_freq(image, fsample);
+
+	wavrecorder.setSampleRate(round(fsample));
+
 	return TRUE;
 }
 
